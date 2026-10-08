@@ -1,0 +1,66 @@
+<policies>
+    <inbound>
+        <base />
+        
+        <!-- 1. CORS for Web Frontends and Dashboards -->
+        <cors allow-credentials="true">
+            <allowed-origins>
+                <origin>*</origin>
+            </allowed-origins>
+            <allowed-methods>
+                <method>GET</method>
+                <method>POST</method>
+                <method>PATCH</method>
+                <method>OPTIONS</method>
+            </allowed-methods>
+            <allowed-headers>
+                <header>*</header>
+            </allowed-headers>
+        </cors>
+
+        <!-- 2. Rate Limiting (Task 3.2: 20 calls per 60 seconds per IP or Subscription Key) -->
+        <rate-limit-by-key 
+            calls="20" 
+            renewal-period="60" 
+            counter-key="@(context.Request.Headers.GetValueOrDefault("Ocp-Apim-Subscription-Key", context.Request.IpAddress))" 
+            remaining-calls-variable-name="remainingCallsPerSubscription" 
+            total-calls-variable-name="totalCallsPerSubscription" />
+
+        <!-- 3. Quota Limit: 1,000 calls per day per caller -->
+        <quota-by-key 
+            calls="1000" 
+            renewal-period="86400" 
+            counter-key="@(context.Request.IpAddress)" />
+
+        <!-- 4. API Key Header Guard (Task 3.2 requirement) -->
+        <check-header 
+            name="Ocp-Apim-Subscription-Key" 
+            failed-check-httpcode="401" 
+            failed-check-error-message="Access denied due to missing or invalid APIM subscription key." />
+
+        <!-- 5. Remove internal server headers -->
+        <set-header name="X-Powered-By" exists-action="delete" />
+    </inbound>
+
+    <backend>
+        <!-- 6. Retry Policy on transient errors (Task 5 requirement) -->
+        <retry condition="@(context.Response.StatusCode == 429 || context.Response.StatusCode == 503)" count="3" interval="2" max-interval="10" delta="2" first-fast-retry="false">
+            <forward-request timeout="30" />
+        </retry>
+    </backend>
+
+    <outbound>
+        <base />
+        <!-- Expose rate limit info in response headers -->
+        <set-header name="X-RateLimit-Remaining" exists-action="override">
+            <value>@(context.Variables.GetValueOrDefault<string>("remainingCallsPerSubscription", "unknown"))</value>
+        </set-header>
+    </outbound>
+
+    <on-error>
+        <base />
+        <set-header name="Error-Source" exists-action="override">
+            <value>Azure-APIM-Gateway</value>
+        </set-header>
+    </on-error>
+</policies>

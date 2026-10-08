@@ -1,0 +1,50 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {},
+        "triggers": {
+            "Recurrence_Daily_Fee_Check": {
+                "type": "Recurrence",
+                "recurrence": {
+                    "frequency": "Day",
+                    "interval": 1,
+                    "schedule": {
+                        "hours": [
+                            "8"
+                        ],
+                        "minutes": [
+                            0
+                        ]
+                    },
+                    "timeZone": "UTC"
+                }
+            }
+        },
+        "actions": {
+            "Invoke_SendFeeReminders_Function": {
+                "type": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "uri": "https://func-fee-mgmt-shivansh-bvdpdefkhcemgdf0.southindia-01.azurewebsites.net/api/notifications/send-reminders",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "triggeredBy": "Azure-Logic-App-Daily-Cron",
+                        "timestamp": "@utcNow()"
+                    },
+                    "retryPolicy": {
+                        "type": "exponential",
+                        "count": 4,
+                        "interval": "PT10S",
+                        "minInterval": "PT5S",
+                        "maxInterval": "PT1M"
+                    }
+                }
+            }
+        },
+        "outputs": {}
+    },
+    "parameters": {}
+}

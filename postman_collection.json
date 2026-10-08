@@ -1,0 +1,171 @@
+{
+  "info": {
+    "_postman_id": "a918a287-fee-mgmt-azure-4001",
+    "name": "Azure Fee Management API",
+    "description": "Postman Collection for testing the Cloud-Native Student Fee Management System.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://func-fee-mgmt-shivansh-bvdpdefkhcemgdf0.southindia-01.azurewebsites.net",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Task 3: Fee Status Queries",
+      "item": [
+        {
+          "name": "1. Get Fee Status - Overdue Student (STU-1002)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/students/STU-1002/fee-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "STU-1002", "fee-status"]
+            },
+            "description": "Returns status: Overdue with remaining balance."
+          }
+        },
+        {
+          "name": "2. Get Fee Status - Fully Paid Student (STU-1015)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/students/STU-1015/fee-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "STU-1015", "fee-status"]
+            },
+            "description": "Returns status: Paid with $0 balance."
+          }
+        },
+        {
+          "name": "3. Get Fee Status - Partially Paid Student (STU-1008)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/students/STU-1008/fee-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "STU-1008", "fee-status"]
+            },
+            "description": "Returns status: Partially Paid."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task 4: Secure Admin Updates & RBAC",
+      "item": [
+        {
+          "name": "1. Admin Update - 401 Unauthorized (No Credentials)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentAmount\": 500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/manage/students/STU-1002/fee",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "manage", "students", "STU-1002", "fee"]
+            },
+            "description": "Expected: 401 Unauthorized."
+          }
+        },
+        {
+          "name": "2. Admin Update - 403 Forbidden (Non-Admin Identity)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-admin-email",
+                "value": "student.unauthorized@university.edu"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentAmount\": 500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/manage/students/STU-1002/fee",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "manage", "students", "STU-1002", "fee"]
+            },
+            "description": "Expected: 403 Forbidden."
+          }
+        },
+        {
+          "name": "3. Admin Update - 200 OK (Finance Admin: Sarah Jenkins)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-admin-email",
+                "value": "sarah.jenkins@university.edu"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentAmount\": 500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/manage/students/STU-1002/fee",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "manage", "students", "STU-1002", "fee"]
+            },
+            "description": "Expected: 200 OK with updated balance and admin audit log."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task 2: Automation & Notifications",
+      "item": [
+        {
+          "name": "1. Trigger Overdue Fee Reminders",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/send-reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "send-reminders"]
+            },
+            "description": "Dispatches notices for overdue students and marks LastReminderSentUtc."
+          }
+        },
+        {
+          "name": "2. Trigger Again (Verify Idempotency)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/send-reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "send-reminders"]
+            },
+            "description": "Expected: 200 OK with remindersSent: 0 (no spam)."
+          }
+        }
+      ]
+    }
+  ]
+}
