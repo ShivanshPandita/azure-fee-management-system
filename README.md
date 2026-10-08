@@ -85,5 +85,4 @@ Import `postman_collection.json` into Postman to test all scenarios:
 
 ---
 
-## 📄 License
-MIT
+
