@@ -6,7 +6,7 @@ This system automates student fee collection reminders, provides secure REST API
 
 ---
 
-## 🌟 Solution Architecture
+## Solution Architecture
 
 ```
 [Clients: Student / Admin / Postman]
@@ -32,7 +32,7 @@ This system automates student fee collection reminders, provides secure REST API
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 ├── api/                           # Serverless Azure Functions (Node.js v4 model)
@@ -63,7 +63,7 @@ This system automates student fee collection reminders, provides secure REST API
 
 ---
 
-## 🚀 Live Cloud Endpoints
+## Live Cloud Endpoints
 
 - **Base URL**: `https://func-fee-mgmt-shivansh-bvdpdefkhcemgdf0.southindia-01.azurewebsites.net`
 
@@ -76,7 +76,7 @@ This system automates student fee collection reminders, provides secure REST API
 
 ---
 
-## 🧪 Testing with Postman
+## Testing with Postman
 Import `postman_collection.json` into Postman to test all scenarios:
 1. **Fee Status (Overdue & Paid)**: Validates calculation logic.
 2. **Security**: Verifies `401 Unauthorized` (no token) and `403 Forbidden` (unauthorized user).
